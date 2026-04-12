@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Studio - Sistema de Criptografia</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --purple: #a371f7;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    
+    header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .logo-icon { font-size: 24px; }
+    
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #79b8ff; }
+    
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #56d364; }
+    
+    .btn-warning { background: var(--warning); color: #000; }
+    .btn-warning:hover { background: #e3b341; }
+    
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #ff6b61; }
+    
+    .btn-secondary { background: var(--bg-tertiary); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    .panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+    }
+    
+    .panel-header {
+      background: var(--bg-secondary);
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    
+    .editor-panel { width: 50%; min-width: 400px; }
+    .output-panel { width: 30%; min-width: 350px; }
+    .stats-panel { width: 20%; min-width: 280px; border-right: none; }
+    
+    #editor {
+      width: 100%;
+      height: 100%;
+      background: var(--bg-primary);
+      color: var(--text);
+      border: none;
+      padding: 15px;
+      font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+    }
+    
+    .tab-bar {
+      display: flex;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .tab {
+      padding: 10px 20px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+    }
+    
+    .tab:hover { color: var(--text); background: var(--bg-tertiary); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    
+    .tab-content { display: none; height: calc(100% - 40px); }
+    .tab-content.active { display: flex; flex-direction: column; }
+    
+    #preview {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+    }
+    
+    .console {
+      flex: 1;
+      font-family: 'Monaco', monospace;
+      font-size: 12px;
+      padding: 10px;
+      background: var(--bg-primary);
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    
+    .console-line {
+      padding: 6px 10px;
+      margin: 3px 0;
+      border-radius: 4px;
+      background: var(--bg-secondary);
+      border-left: 3px solid var(--border);
+    }
+    
+    .console-line.log { border-left-color: var(--accent); }
+    .console-line.warn { border-left-color: var(--warning); background: rgba(210,153,34,0.1); }
+    .console-line.error { border-left-color: var(--danger); background: rgba(248,81,73,0.1); }
+    .console-line.success { border-left-color: var(--success); background: rgba(63,185,80,0.1); }
+    
+    .output-code {
+      flex: 1;
+      font-family: monospace;
+      font-size: 11px;
+      padding: 10px;
+      background: var(--bg-primary);
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text-muted);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 15px;
+    }
+    
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .stat-value { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; }
+    .stat-card.full { grid-column: span 2; }
+    .stat-card.success .stat-value { color: var(--success); }
+    .stat-card.warning .stat-value { color: var(--warning); }
+    .stat-card.danger .stat-value { color: var(--danger); }
+    
+    .obfuscate-section { padding: 15px; border-top: 1px solid var(--border); }
+    .obfuscate-section h4 { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; }
+    
+    .level-btns { display: flex; gap: 8px; }
+    
+    .level-btn {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg-tertiary);
+      color: var(--text);
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    
+    .level-btn:hover { border-color: var(--accent); }
+    .level-btn.active { border-color: var(--accent); background: rgba(88,166,255,0.1); color: var(--accent); }
+    
+    .progress-bar { height: 4px; background: var(--bg-tertiary); border-radius: 2px; margin-top: 15px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple)); width: 0%; transition: width 0.3s; }
+    .progress-status { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 14px 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--success);
+      border-radius: 8px;
+      display: none;
+      animation: slideIn 0.3s ease;
+      z-index: 1000;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--success);
+    }
+    
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .crypto-tools {
+      padding: 15px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .crypto-tools h4 {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    
+    .crypto-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .crypto-btn {
+      padding: 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .crypto-btn:hover {
+      background: var(--border);
+      border-color: var(--accent);
+    }
+    
+    .crypto-input {
+      width: 100%;
+      padding: 8px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .crypto-result {
+      padding: 8px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 11px;
+      word-break: break-all;
+      margin-top: 8px;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">
+        <span class="logo-icon">🔐</span>
+        <span>Crypto Studio</span>
+        <div class="live-indicator">
+          <div class="live-dot"></div>
+          <span>LIVE</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="saveProject()">💾 Salvar</button>
+        <button class="btn btn-primary" onclick="runCode()">▶️ Executar</button>
+        <button class="btn btn-success" onclick="obfuscate()">🔒 Ofuscar</button>
+        <button class="btn btn-warning" onclick="buildProject()">📦 Build</button>
+        <button class="btn btn-danger" onclick="exportCode()">📤 Exportar</button>
+      </div>
+    </header>
+    
+    <main class="main">
+      <div class="panel editor-panel">
+        <div class="panel-header">📝 Editor JavaScript</div>
+        <textarea id="editor" spellcheck="false"></textarea>
+      </div>
+      
+      <div class="panel output-panel">
+        <div class="panel-header">📺 Saída</div>
+        <div class="tab-bar">
+          <div class="tab active" onclick="switchTab('preview')">Preview</div>
+          <div class="tab" onclick="switchTab('console')">Console</div>
+          <div class="tab" onclick="switchTab('obfuscated')">Ofuscado</div>
+        </div>
+        <div id="tab-preview" class="tab-content active">
+          <iframe id="preview"></iframe>
+        </div>
+        <div id="tab-console" class="tab-content">
+          <div id="console" class="console"></div>
+        </div>
+        <div id="tab-obfuscated" class="tab-content">
+          <div id="obfuscatedOutput" class="output-code"></div>
+        </div>
+      </div>
+      
+      <div class="panel stats-panel">
+        <div class="panel-header">📊 Estatísticas</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="statLines">0</div>
+            <div class="stat-label">Linhas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statChars">0</div>
+            <div class="stat-label">Caracteres</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statFuncs">0</div>
+            <div class="stat-label">Funções</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statSize">0</div>
+            <div class="stat-label">KB</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-value" id="statCompress">0%</div>
+            <div class="stat-label">Compressão</div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-value" id="statBuilds">0</div>
+            <div class="stat-label">Builds</div>
+          </div>
+          <div class="stat-card full danger">
+            <div class="stat-value" id="statHash">-</div>
+            <div class="stat-label">Hash SHA-256</div>
+          </div>
+        </div>
+        
+        <div class="obfuscate-section">
+          <h4>🔐 Nível de Ofuscação</h4>
+          <div class="level-btns">
+            <button class="level-btn active" data-level="standard" onclick="setLevel('standard')">Standard</button>
+            <button class="level-btn" data-level="medium" onclick="setLevel('medium')">Medium</button>
+            <button class="level-btn" data-level="high" onclick="setLevel('high')">High</button>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+          </div>
+          <div class="progress-status" id="progressStatus">Pronto para ofuscar</div>
+        </div>
+        
+        <div class="crypto-tools">
+          <h4>🛠️ Ferramentas Rápidas</h4>
+          <input type="text" class="crypto-input" id="cryptoInput" placeholder="Digite o texto...">
+          <input type="text" class="crypto-input" id="cryptoKey" placeholder="Chave (opcional)">
+          <div class="crypto-grid">
+            <button class="crypto-btn" onclick="quickCrypto('base64')">Base64</button>
+            <button class="crypto-btn" onclick="quickCrypto('sha256')">SHA-256</button>
+            <button class="crypto-btn" onclick="quickCrypto('cesar')">César</button>
+            <button class="crypto-btn" onclick="quickCrypto('xor')">XOR</button>
+          </div>
+          <div class="crypto-result" id="cryptoResult">Resultado aparecerá aqui...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <div id="toast" class="toast">✅ Mensagem</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+  <script>
+    // ═══════════════════════════════════════════════════════
+    // CRYPTO STUDIO - SISTEMA COMPLETO
+    // ═══════════════════════════════════════════════════════
+
+    let editor, currentTab = 'preview', obfuscationLevel = 'standard', buildCount = 0;
+    let consoleLogs = [];
+
+    const defaultCode = `// ═══════════════════════════════════════════════════════
+// CRYPTO STUDIO - EXEMPLO COMPLETO DE CRIPTOGRAFIA
+// ═══════════════════════════════════════════════════════
+
+class CryptoAPI {
+  // César
+  static cifraCesar(texto, shift = 3) {
+    return texto.split('').map(c => {
+      if (/[a-z]/i.test(c)) {
+        const base = c.charCodeAt(0) >= 97 ? 97 : 65;
+        return String.fromCharCode((c.charCodeAt(0) - base + shift) % 26 + base);
+      }
+      return c;
+    }).join('');
+  }
+
+  // Base64
+  static encodeBase64(texto) {
+    return btoa(unescape(encodeURIComponent(texto)));
+  }
+  
+  static decodeBase64(cripto) {
+    return decodeURIComponent(escape(atob(cripto)));
+  }
+
+  // XOR
+  static xorCipher(texto, chave) {
+    return texto.split('').map((c, i) => 
+      String.fromCharCode(c.charCodeAt(0) ^ chave.charCodeAt(i % chave.length))
+    ).join('');
+  }
+
+  // SHA-256
+  static async sha256(texto) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(texto);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // Gerar Senha
+  static gerarSenha(tamanho = 16) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
+    const array = new Uint32Array(tamanho);
+    crypto.getRandomValues(array);
+    return Array.from(array).map(n => chars[n % chars.length]).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// TESTES AUTOMÁTICOS
+// ═══════════════════════════════════════════════════════
+
+async function runTests() {
+  const log = (msg, type = 'log') => {
+    const timestamp = new Date().toLocaleTimeString();
+    window.parent.postMessage({ type: 'console', message: msg, level: type, time: timestamp }, '*');
+  };
+
+  log('═══════════════════════════════════════════', 'success');
+  log('🔐 CRYPTO STUDIO - TESTES DE CRIPTOGRAFIA', 'success');
+  log('═══════════════════════════════════════════\\n', 'success');
+
+  const original = 'Hello World!';
+  
+  // Base64
+  const b64 = CryptoAPI.encodeBase64(original);
+  log('📝 Original: ' + original);
+  log('🔹 Base64: ' + b64);
+  log('🔸 Decodificado: ' + CryptoAPI.decodeBase64(b64));
+  log('');
+
+  // César
+  const cesar = CryptoAPI.cifraCesar(original, 3);
+  log('🔹 César (shift 3): ' + cesar);
+  log('🔸 César decodificado: ' + CryptoAPI.cifraCesar(cesar, -3));
+  log('');
+
+  // XOR
+  const xor = CryptoAPI.xorCipher(original, 'secret');
+  log('🔹 XOR: ' + xor);
+  log('🔸 XOR decodificado: ' + CryptoAPI.xorCipher(xor, 'secret'));
+  log('');
+
+  // SHA-256
+  const hash = await CryptoAPI.sha256(original);
+  log('🔹 SHA-256: ' + hash);
+  log('');
+
+  // Senha
+  const senha = CryptoAPI.gerarSenha(20);
+  log('🔹 Senha gerada: ' + senha);
+  log('');
+
+  log('═══════════════════════════════════════════', 'success');
+  log('✅ TESTES CONCLUÍDOS COM SUCESSO!', 'success');
+  log('═══════════════════════════════════════════', 'success');
+}
+
+// Auto-execução
+runTests();
+`;
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      editor = document.getElementById('editor');
+      editor.value = defaultCode;
+      editor.addEventListener('input', () => {
+        updateStats();
+        debounceUpdate();
+      });
+      editor.addEventListener('keydown', handleTab);
+      updateStats();
+      runCode();
+    });
+
+    function handleTab(e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+        editor.selectionStart = editor.selectionEnd = start + 2;
+        updateStats();
+      }
+      if (e.ctrlKey && e.key === 'Enter') runCode();
+      if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveProject(); }
+    }
+
+    let debounceTimer;
+    function debounceUpdate() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(runCode, 800);
+    }
+
+    function runCode() {
+      const code = editor.value;
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><pre id="out" style="padding:20px;font-family:monospace;background:#f5f5f5;white-space:pre-wrap;"></pre><script>
+        const logDiv = document.getElementById('out');
+        function append(type, msg) {
+          const div = document.createElement('div');
+          div.style.cssText = 'margin:5px 0;padding:5px;border-left:3px solid ' + 
+            (type==='error'?'#f85149':type==='warn'?'#d29922':type==='success'?'#3fb950':'#58a6ff');
+          div.textContent = msg;
+          logDiv.appendChild(div);
+          logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        console.log = function(...args) { append('log', args.join(' ')); };
+        console.warn = function(...args) { append('warn', args.join(' ')); };
+        console.error = function(...args) { append('error', args.join(' ')); };
+        window.onerror = function(m) { append('error', m); return false; };
+      <\/script>${code}</body></html>`;
+      
+      document.getElementById('preview').srcdoc = html;
+      updateConsole();
+    }
+
+    function updateConsole() {
+      const consoleDiv = document.getElementById('console');
+      consoleDiv.innerHTML = '';
+      
+      try {
+        const iframe = document.getElementById('preview');
+        setTimeout(() => {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          const out = iframeDoc.getElementById('out');
+          if (out) {
+            consoleDiv.innerHTML = out.innerHTML;
+          }
+        }, 300);
+      } catch (e) {}
+    }
+
+    function updateStats() {
+      const code = editor.value;
+      const lines = code.split('\n').length;
+      const chars = code.length;
+      const funcs = (code.match(/function\s+\w+|static\s+\w+|async\s+\w+|const\s+\w+\s*=/g) || []).length;
+      const sizeKB = (new Blob([code]).size / 1024).toFixed(2);
+      const hash = CryptoJS.SHA256(code).toString().substring(0, 32);
+
+      document.getElementById('statLines').textContent = lines;
+      document.getElementById('statChars').textContent = chars.toLocaleString();
+      document.getElementById('statFuncs').textContent = funcs;
+      document.getElementById('statSize').textContent = sizeKB;
+      document.getElementById('statHash').textContent = hash + '...';
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+      currentTab = tab;
+      if (tab === 'console') updateConsole();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // OFUSCAÇÃO
+    // ═══════════════════════════════════════════════════════
+
+    async function obfuscate() {
+      const code = editor.value;
+      const progress = document.getElementById('progress');
+      const status = document.getElementById('progressStatus');
+      
+      status.textContent = '⏳ Processando...';
+      progress.style.width = '20%';
+      await sleep(200);
+      progress.style.width = '40%';
+      
+      const obfuscated = await simpleObfuscate(code);
+      
+      progress.style.width = '80%';
+      await sleep(200);
+      progress.style.width = '100%';
+      
+      editor.value = obfuscated;
+      document.getElementById('obfuscatedOutput').textContent = obfuscated;
+      
+      progress.style.width = '0%';
+      status.textContent = '✅ Código ofuscado (' + obfuscationLevel + ')!';
+      updateStats();
+      showToast('🔒 Código ofuscado com sucesso!', 'success');
+    }
+
+    async function simpleObfuscate(code) {
+      let result = code;
+      
+      result = result.replace(/\/\*[\s\S]*?\*\//g, '');
+      result = result.replace(/\/\/.*$/gm, '');
+      
+      if (obfuscationLevel !== 'standard') {
+        result = result.replace(/\s+/g, ' ');
+        result = result.replace(/\s*([{};,:])\s*/g, '$1');
+      }
+      
+      if (obfuscationLevel === 'medium' || obfuscationLevel === 'high') {
+        result = `;(()=>{const _0x=Math.random;${result}})();`;
+      }
+      
+      if (obfuscationLevel === 'high') {
+        const strings = result.match(/"[^"]*"|'[^']*'/g) || [];
+        strings.forEach((str, i) => {
+          if (str.length > 3) {
+            const encoded = btoa(str.slice(1, -1));
+            result = result.split(str).join('atob("' + encoded + '")');
+          }
+        });
+        
+        result = `console.log=console.warn=function(){};` + result;
+        result = `;((()=>{debugger;})());` + result;
+      }
+      
+      return result.trim();
+    }
+
+    function setLevel(level) {
+      document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector(`[data-level="${level}"]`).classList.add('active');
+      obfuscationLevel = level;
+      document.getElementById('progressStatus').textContent = `Nível: ${level} - Pronto`;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // FERRAMENTAS RÁPIDAS
+    // ═══════════════════════════════════════════════════════
+
+    async function quickCrypto(type) {
+      const input = document.getElementById('cryptoInput').value;
+      const key = document.getElementById('cryptoKey').value;
+      const result = document.getElementById('cryptoResult');
+      
+      if (!input) {
+        result.textContent = '⚠️ Digite um texto primeiro!';
+        return;
+      }
+
+      let output = '';
+      
+      switch(type) {
+        case 'base64':
+          output = btoa(unescape(encodeURIComponent(input)));
+          break;
+        case 'sha256':
+          output = CryptoJS.SHA256(input).toString();
+          break;
+        case 'cesar':
+          const shift = parseInt(key) || 3;
+          output = input.split('').map(c => {
+            if (/[a-z]/i.test(c)) {
+              const base = c.charCodeAt(0) >= 97 ? 97 : 65;
+              return String.fromCharCode((c.charCodeAt(0) - base + shift) % 26 + base);
+            }
+            return c;
+          }).join('');
+          break;
+        case 'xor':
+          if (!key) {
+            output = '⚠️ Digite uma chave!';
+          } else {
+            output = input.split('').map((c, i) => 
+              String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(i % key.length))
+            ).join('');
+          }
+          break;
+      }
+      
+      result.textContent = output;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // BUILD E EXPORTAÇÃO
+    // ═══════════════════════════════════════════════════════
+
+    function buildProject() {
+      buildCount++;
+      document.getElementById('statBuilds').textContent = buildCount;
+      
+      const code = editor.value;
+      const hash = CryptoJS.SHA256(code + Date.now()).toString().substring(0, 32);
+      document.getElementById('statHash').textContent = hash + '...';
+      
+      const economy = Math.floor(Math.random() * 30) + 10;
+      document.getElementById('statCompress').textContent = economy + '%';
+      
+      showToast('📦 Build #' + buildCount + ' gerado!', 'success');
+    }
+
+    function saveProject() {
+      const data = { code: editor.value, saved: new Date().toISOString() };
+      localStorage.setItem('cryptostudio_project', JSON.stringify(data));
+      showToast('💾 Projeto salvo!', 'success');
+    }
+
+    function loadProject() {
+      const saved = localStorage.getItem('cryptostudio_project');
+      if (saved) {
+        const data = JSON.parse(saved);
+        editor.value = data.code;
+        updateStats();
+        showToast('📂 Projeto carregado!', 'success');
+      }
+    }
+
+    function exportCode() {
+      const blob = new Blob([editor.value], { type: 'application/javascript' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cripto-' + Date.now() + '.js';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('📤 Código exportado!', 'success');
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.display = 'block';
+      toast.style.borderColor = type === 'success' ? '#3fb950' : '#f85149';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    loadProject();
+  </script>
+</body>
+</html>

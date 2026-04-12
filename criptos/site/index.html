@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Studio - Sistema de Criptografia</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/fold/foldgutter.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --border: #30363d;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+      --purple: #a371f7;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    
+    header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .logo-icon {
+      font-size: 24px;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    
+    .btn-primary:hover { background: #79b8ff; }
+    
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #56d364; }
+    
+    .btn-warning { background: var(--warning); color: #000; }
+    .btn-warning:hover { background: #e3b341; }
+    
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #ff6b61; }
+    
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover { background: var(--border); }
+    
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    .panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+    }
+    
+    .panel-header {
+      background: var(--bg-secondary);
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .panel-content {
+      flex: 1;
+      overflow: auto;
+    }
+    
+    .editor-panel {
+      width: 45%;
+      min-width: 400px;
+    }
+    
+    .output-panel {
+      width: 30%;
+      min-width: 300px;
+    }
+    
+    .stats-panel {
+      width: 25%;
+      min-width: 280px;
+      border-right: none;
+    }
+    
+    .CodeMirror {
+      height: 100% !important;
+      font-size: 13px;
+      background: var(--bg-primary) !important;
+    }
+    
+    .CodeMirror-gutters {
+      background: var(--bg-secondary) !important;
+      border-right: 1px solid var(--border) !important;
+    }
+    
+    .preview-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+    }
+    
+    .console {
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      padding: 10px;
+      background: var(--bg-primary);
+      height: 100%;
+      overflow-y: auto;
+    }
+    
+    .console-line {
+      padding: 4px 8px;
+      margin: 2px 0;
+      border-radius: 4px;
+      background: var(--bg-secondary);
+      border-left: 3px solid var(--border);
+    }
+    
+    .console-line.log { border-left-color: var(--accent); }
+    .console-line.warn { border-left-color: var(--warning); background: rgba(210,153,34,0.1); }
+    .console-line.error { border-left-color: var(--danger); background: rgba(248,81,73,0.1); }
+    .console-line.success { border-left-color: var(--success); background: rgba(63,185,80,0.1); }
+    
+    .console-time {
+      color: var(--text-muted);
+      margin-right: 8px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 15px;
+    }
+    
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    
+    .stat-card.full { grid-column: span 2; }
+    
+    .stat-card.success .stat-value { color: var(--success); }
+    .stat-card.warning .stat-value { color: var(--warning); }
+    .stat-card.danger .stat-value { color: var(--danger); }
+    
+    .obfuscate-section {
+      padding: 15px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .obfuscate-section h4 {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    
+    .level-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .level-btn {
+      flex: 1;
+      min-width: 80px;
+      padding: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg-tertiary);
+      color: var(--text);
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .level-btn:hover { border-color: var(--accent); }
+    .level-btn.active { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    
+    .output-preview {
+      height: 50%;
+      overflow: auto;
+      font-family: 'Monaco', monospace;
+      font-size: 11px;
+      padding: 10px;
+      background: var(--bg-primary);
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text-muted);
+    }
+    
+    .tab-bar {
+      display: flex;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .tab {
+      padding: 10px 20px;
+      font-size: 12px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    
+    .tab-content {
+      display: none;
+      height: calc(100% - 40px);
+    }
+    
+    .tab-content.active { display: flex; flex-direction: column; }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .toast.success { border-color: var(--success); }
+    .toast.error { border-color: var(--danger); }
+    
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .progress-bar {
+      height: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.3s;
+    }
+    
+    .file-tree {
+      padding: 10px;
+      font-size: 12px;
+    }
+    
+    .file-item {
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .file-item:hover { background: var(--bg-tertiary); }
+    .file-item.active { background: rgba(88,166,255,0.1); color: var(--accent); }
+    
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+    }
+    
+    .modal.active { display: flex; }
+    
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: 10px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="logo">
+        <span class="logo-icon">🔐</span>
+        <span>Crypto Studio</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="saveProject()">
+          💾 Salvar
+        </button>
+        <button class="btn btn-primary" onclick="runCode()">
+          ▶️ Executar
+        </button>
+        <button class="btn btn-success" onclick="obfuscate()">
+          🔒 Ofuscar
+        </button>
+        <button class="btn btn-warning" onclick="buildProject()">
+          📦 Build
+        </button>
+        <button class="btn btn-danger" onclick="exportCode()">
+          📤 Exportar
+        </button>
+      </div>
+    </header>
+    
+    <main class="main">
+      <div class="panel editor-panel">
+        <div class="panel-header">
+          <span>📝 Editor</span>
+          <span id="fileName">main.js</span>
+        </div>
+        <div class="tab-bar">
+          <div class="tab active" data-tab="editor">JavaScript</div>
+          <div class="tab" data-tab="html">HTML</div>
+          <div class="tab" data-tab="css">CSS</div>
+        </div>
+        <div class="panel-content">
+          <textarea id="editor"></textarea>
+        </div>
+      </div>
+      
+      <div class="panel output-panel">
+        <div class="panel-header">
+          <span>📺 Saída</span>
+        </div>
+        <div class="tab-bar">
+          <div class="tab active" data-tab="preview">Preview</div>
+          <div class="tab" data-tab="console">Console</div>
+          <div class="tab" data-tab="obfuscated">Ofuscado</div>
+        </div>
+        <div class="panel-content">
+          <div class="tab-content active" data-content="preview">
+            <iframe id="preview" class="preview-frame"></iframe>
+          </div>
+          <div class="tab-content" data-content="console">
+            <div id="console" class="console"></div>
+          </div>
+          <div class="tab-content" data-content="obfuscated">
+            <div id="obfuscatedOutput" class="output-preview"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="panel stats-panel">
+        <div class="panel-header">
+          <span>📊 Estatísticas</span>
+        </div>
+        <div class="panel-content">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value" id="statLines">0</div>
+              <div class="stat-label">Linhas</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statChars">0</div>
+              <div class="stat-label">Caracteres</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statFuncs">0</div>
+              <div class="stat-label">Funções</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statSize">0</div>
+              <div class="stat-label">KB</div>
+            </div>
+            <div class="stat-card success">
+              <div class="stat-value" id="statCompress">0%</div>
+              <div class="stat-label">Compressão</div>
+            </div>
+            <div class="stat-card warning">
+              <div class="stat-value" id="statBuilds">0</div>
+              <div class="stat-label">Builds</div>
+            </div>
+            <div class="stat-card full danger">
+              <div class="stat-value" id="statHash">-</div>
+              <div class="stat-label">Hash SHA-256</div>
+            </div>
+          </div>
+          
+          <div class="obfuscate-section">
+            <h4>🔐 Nível de Ofuscação</h4>
+            <div class="level-btns">
+              <button class="level-btn active" data-level="standard">Standard</button>
+              <button class="level-btn" data-level="medium">Medium</button>
+              <button class="level-btn" data-level="high">High</button>
+            </div>
+            
+            <div class="progress-bar" style="margin-top: 15px;">
+              <div class="progress-fill" id="obfuscateProgress" style="width: 0%"></div>
+            </div>
+            
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+              <span id="obfuscateStatus">Selecione um nível e clique em "Ofuscar"</span>
+            </div>
+          </div>
+          
+          <div style="padding: 15px;">
+            <h4 style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">
+              📁 Arquivos do Projeto
+            </h4>
+            <div class="file-tree">
+              <div class="file-item active">
+                <span>📄</span> main.js
+              </div>
+              <div class="file-item">
+                <span>📄</span> app.html
+              </div>
+              <div class="file-item">
+                <span>📄</span> styles.css
+              </div>
+              <div class="file-item">
+                <span>📁</span> assets/
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <div id="toast" class="toast" style="display: none;"></div>
+  
+  <div id="exportModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title">📤 Exportar Código</div>
+      <input type="text" class="modal-input" id="exportName" placeholder="Nome do arquivo">
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="downloadCode()">Download</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
+  <script>
+    // ═══════════════════════════════════════════════════════
+    // CRYPTO STUDIO - SISTEMA DE CRIPTOGRAFIA EM TEMPO REAL
+    // ═══════════════════════════════════════════════════════
+
+    let editor, currentTab = 'editor', obfuscationLevel = 'standard';
+    let buildCount = 0;
+    let consoleLogs = [];
+
+    // Código inicial
+    const defaultCode = `// ═══════════════════════════════════════════════════════
+// CRYPTO STUDIO - EXEMPLO DE CRIPTOGRAFIA
+// ═══════════════════════════════════════════════════════
+
+// Cifra de César
+function cifraCesar(texto, deslocamento) {
+  return texto.split('').map(char => {
+    if (char.match(/[a-z]/i)) {
+      const codigo = char.charCodeAt(0);
+      const base = codigo >= 97 ? 97 : 65;
+      return String.fromCharCode((codigo - base + deslocamento) % 26 + base);
+    }
+    return char;
+  }).join('');
+}
+
+// Cifra de Vigenère
+function cifraVigenere(texto, chave) {
+  let resultado = '';
+  let indexChave = 0;
+  
+  for (let i = 0; i < texto.length; i++) {
+    const char = texto[i];
+    if (char.match(/[a-z]/i)) {
+      const codigo = char.charCodeAt(0);
+      const base = codigo >= 97 ? 97 : 65;
+      const deslocamento = chave.charCodeAt(indexChave % chave.length) - 97;
+      resultado += String.fromCharCode((codigo - base + deslocamento) % 26 + base);
+      indexChave++;
+    } else {
+      resultado += char;
+    }
+  }
+  return resultado;
+}
+
+// ROT13
+function rot13(texto) {
+  return texto.replace(/[a-z]/gi, char => {
+    const codigo = char.charCodeAt(0);
+    return String.fromCharCode(
+      codigo + (codigo >= 65 && codigo <= 90 ? 13 : (codigo >= 97 && codigo <= 122 ? 13 : 0))
+    );
+  });
+}
+
+// Base64
+function encodeBase64(texto) {
+  return btoa(unescape(encodeURIComponent(texto)));
+}
+
+function decodeBase64(cripto) {
+  return decodeURIComponent(escape(atob(cripto)));
+}
+
+// Hash SHA-256
+async function hashSHA256(texto) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(texto);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// XOR Cipher
+function xorCipher(texto, chave) {
+  return texto.split('').map((char, i) => 
+    String.fromCharCode(char.charCodeAt(0) ^ chave.charCodeAt(i % chave.length))
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// TESTES
+// ═══════════════════════════════════════════════════════
+
+console.log('═══════════════════════════════════════════');
+console.log('🔐 CRYPTO STUDIO - TESTES DE CRIPTOGRAFIA');
+console.log('═══════════════════════════════════════════\\n');
+
+const mensagem = 'Olá Mundo! Esta é uma mensagem secreta.';
+
+console.log('📝 Mensagem original:', mensagem);
+console.log('');
+
+// César
+const cesar = cifraCesar(mensagem, 3);
+console.log('🔹 César (shift 3):', cesar);
+console.log('🔸 César decodificado:', cifraCesar(cesar, -3));
+console.log('');
+
+// Vigenère
+const vigenere = cifraVigenere(mensagem, 'chave');
+console.log('🔹 Vigenère (chave:chave):', vigenere);
+console.log('');
+
+// ROT13
+const rot = rot13(mensagem);
+console.log('🔹 ROT13:', rot);
+console.log('');
+
+// Base64
+const b64 = encodeBase64(mensagem);
+console.log('🔹 Base64:', b64);
+console.log('🔸 Base64 decodificado:', decodeBase64(b64));
+console.log('');
+
+// XOR
+const xor = xorCipher(mensagem, 'secret');
+console.log('🔹 XOR (secret):', xor);
+console.log('🔸 XOR decodificado:', xorCipher(xor, 'secret'));
+console.log('');
+
+// SHA-256
+hashSHA256(mensagem).then(hash => {
+  console.log('🔹 SHA-256:', hash);
+  console.log('');
+  console.log('═══════════════════════════════════════════');
+  console.log('✅ Todos os testes concluídos!');
+  console.log('═══════════════════════════════════════════');
+});
+
+console.log('');
+console.log('⏳ Calculando hash...');
+`;
+
+    const defaultHTML = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Crypto Studio</h1>
+    <p>Sistema de criptografia em tempo real</p>
+    <div id="result"></div>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>`;
+
+    const defaultCSS = `* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0d1117;
+  color: #c9d1d9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.container {
+  text-align: center;
+  padding: 40px;
+}
+
+h1 {
+  font-size: 3em;
+  margin-bottom: 10px;
+}
+
+#result {
+  margin-top: 30px;
+  padding: 20px;
+  background: #161b22;
+  border-radius: 8px;
+  text-align: left;
+  font-family: monospace;
+}`;
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      initEditor();
+      initTabs();
+      initLevelButtons();
+      updateStats();
+      runCode();
+    });
+
+    function initEditor() {
+      editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+        mode: 'javascript',
+        theme: 'monokai',
+        lineNumbers: true,
+        matchBrackets: true,
+        styleActiveLine: true,
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: true,
+        autoCloseBrackets: true,
+        extraKeys: {
+          'Ctrl-S': saveProject,
+          'Ctrl-Enter': runCode,
+          'Ctrl-O': obfuscate
+        }
+      });
+
+      editor.setValue(defaultCode);
+      editor.setSize('100%', '100%');
+
+      editor.on('change', () => {
+        updateStats();
+        autoRun();
+      });
+    }
+
+    let autoRunTimeout;
+    function autoRun() {
+      clearTimeout(autoRunTimeout);
+      autoRunTimeout = setTimeout(() => {
+        if (document.getElementById('preview').offsetParent !== null) {
+          updatePreview();
+        }
+      }, 1000);
+    }
+
+    function initTabs() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const panel = tab.closest('.panel');
+          panel.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          panel.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          panel.querySelector(`[data-content="${tab.dataset.tab}"]`).classList.add('active');
+        });
+      });
+    }
+
+    function initLevelButtons() {
+      document.querySelectorAll('.level-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          obfuscationLevel = btn.dataset.level;
+        });
+      });
+    }
+
+    function updatePreview() {
+      const code = editor.getValue();
+      const html = defaultHTML;
+      const css = defaultCSS;
+
+      const fullHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>${css}</style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>🔐 Crypto Studio</h1>
+            <p>Sistema de criptografia em tempo real</p>
+            <pre id="result"></pre>
+          </div>
+          <script>
+            // Console override
+            const resultDiv = document.getElementById('result');
+            const originalLog = console.log;
+            const originalWarn = console.warn;
+            const originalError = console.error;
+            
+            let consoleOutput = [];
+            
+            function formatArgs(args) {
+              return Array.from(args).map(arg => {
+                if (typeof arg === 'object') {
+                  return JSON.stringify(arg, null, 2);
+                }
+                return String(arg);
+              }).join(' ');
+            }
+            
+            console.log = function(...args) {
+              consoleOutput.push({ type: 'log', text: formatArgs(args), time: new Date().toLocaleTimeString() });
+              originalLog.apply(console, args);
+            };
+            
+            console.warn = function(...args) {
+              consoleOutput.push({ type: 'warn', text: formatArgs(args), time: new Date().toLocaleTimeString() });
+              originalWarn.apply(console, args);
+            };
+            
+            console.error = function(...args) {
+              consoleOutput.push({ type: 'error', text: formatArgs(args), time: new Date().toLocaleTimeString() });
+              originalError.apply(console, args);
+            };
+            
+            window.onerror = function(msg, url, line) {
+              consoleOutput.push({ type: 'error', text: msg + ' (line ' + line + ')', time: new Date().toLocaleTimeString() });
+              return false;
+            };
+            
+            window.onload = function() {
+              setTimeout(() => {
+                resultDiv.innerHTML = consoleOutput.map(c => 
+                  '<div style="margin: 5px 0; padding: 5px 10px; border-left: 3px solid ' + 
+                  (c.type === 'error' ? '#f85149' : c.type === 'warn' ? '#d29922' : '#58a6ff') + 
+                  '; color: ' + (c.type === 'error' ? '#f85149' : '#fff') + '">' +
+                  '<span style="color: #8b949e; font-size: 10px;">' + c.time + '</span> ' +
+                  c.text.replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+                  '</div>'
+                ).join('');
+              }, 100);
+            };
+          <\/script>
+          ${code}
+        </body>
+        </html>
+      `;
+
+      const iframe = document.getElementById('preview');
+      iframe.srcdoc = fullHTML;
+      
+      setTimeout(updateConsoleFromIframe, 500);
+    }
+
+    function updateConsoleFromIframe() {
+      const consoleDiv = document.getElementById('console');
+      const iframe = document.getElementById('preview');
+      
+      try {
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const resultDiv = iframeDoc.getElementById('result');
+        if (resultDiv) {
+          consoleDiv.innerHTML = resultDiv.innerHTML;
+        }
+      } catch (e) {
+        consoleDiv.innerHTML = '<div style="color: var(--warning); padding: 10px;">⚠️ Erro ao acessar iframe</div>';
+      }
+    }
+
+    function runCode() {
+      updateConsoleFromIframe();
+      updatePreview();
+      updateStats();
+      showToast('▶️ Código executado!', 'success');
+    }
+
+    function updateStats() {
+      const code = editor.getValue();
+      const lines = code.split('\n').length;
+      const chars = code.length;
+      const functions = (code.match(/function\s+\w+|const\s+\w+\s*=\s*(?:async\s*)?\(|=>\s*{/g) || []).length;
+      const sizeKB = (new Blob([code]).size / 1024).toFixed(2);
+
+      document.getElementById('statLines').textContent = lines;
+      document.getElementById('statChars').textContent = chars.toLocaleString();
+      document.getElementById('statFuncs').textContent = functions;
+      document.getElementById('statSize').textContent = sizeKB;
+
+      // Gera hash
+      const hash = CryptoJS.SHA256(code).toString().substring(0, 32);
+      document.getElementById('statHash').textContent = hash + '...';
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // SISTEMA DE OFUSCAÇÃO
+    // ═══════════════════════════════════════════════════════
+
+    const obfuscationConfigs = {
+      standard: {
+        compact: true,
+        controlFlowFlattening: true,
+        controlFlowFlatteningThreshold: 0.5,
+        deadCodeInjection: false,
+        debugProtection: false,
+        disableConsoleOutput: false,
+        identifierNamesGenerator: 'hexadecimal',
+        numbersToExpressions: true,
+        renameGlobals: false,
+        selfDefending: true,
+        shuffleStringArray: true,
+        splitStrings: true,
+        splitStringsChunkLength: 5,
+        stringArray: true,
+        stringArrayCallsTransform: true,
+        stringArrayCallsTransformThreshold: 0.5,
+        stringArrayEncoding: ['base64'],
+        stringArrayIndexShift: true,
+        stringArrayRotate: true,
+        stringArrayShuffle: true,
+        stringArrayThreshold: 0.5,
+        transformObjectKeys: false,
+        unicodeEscapeSequence: true
+      },
+      medium: {
+        compact: true,
+        controlFlowFlattening: true,
+        controlFlowFlatteningThreshold: 0.75,
+        deadCodeInjection: true,
+        deadCodeInjectionThreshold: 0.3,
+        debugProtection: true,
+        debugProtectionInterval: 2000,
+        disableConsoleOutput: true,
+        identifierNamesGenerator: 'hexadecimal',
+        numbersToExpressions: true,
+        renameGlobals: true,
+        selfDefending: true,
+        shuffleStringArray: true,
+        splitStrings: true,
+        splitStringsChunkLength: 3,
+        stringArray: true,
+        stringArrayCallsTransform: true,
+        stringArrayCallsTransformThreshold: 0.75,
+        stringArrayEncoding: ['base64', 'rc4'],
+        stringArrayIndexShift: true,
+        stringArrayRotate: true,
+        stringArrayShuffle: true,
+        stringArrayThreshold: 0.75,
+        transformObjectKeys: true,
+        unicodeEscapeSequence: true
+      },
+      high: {
+        compact: true,
+        controlFlowFlattening: true,
+        controlFlowFlatteningThreshold: 1,
+        deadCodeInjection: true,
+        deadCodeInjectionThreshold: 0.5,
+        debugProtection: true,
+        debugProtectionInterval: 2000,
+        disableConsoleOutput: true,
+        identifierNamesGenerator: 'hexadecimal',
+        numbersToExpressions: true,
+        renameGlobals: true,
+        selfDefending: true,
+        shuffleStringArray: true,
+        splitStrings: true,
+        splitStringsChunkLength: 2,
+        stringArray: true,
+        stringArrayCallsTransform: true,
+        stringArrayCallsTransformThreshold: 1,
+        stringArrayEncoding: ['rc4'],
+        stringArrayIndexShift: true,
+        stringArrayRotate: true,
+        stringArrayShuffle: true,
+        stringArrayThreshold: 1,
+        transformObjectKeys: true,
+        unicodeEscapeSequence: true
+      }
+    };
+
+    async function obfuscate() {
+      const code = editor.getValue();
+      const config = obfuscationConfigs[obfuscationLevel];
+      
+      document.getElementById('obfuscateStatus').textContent = '⏳ Ofuscando...';
+      document.getElementById('obfuscateProgress').style.width = '30%';
+      
+      // Simula ofuscação com progress
+      await new Promise(r => setTimeout(r, 300));
+      document.getElementById('obfuscateProgress').style.width = '60%';
+      
+      // Usa função de ofuscação client-side
+      const obfuscated = await simpleObfuscate(code, config);
+      
+      document.getElementById('obfuscateProgress').style.width = '100%';
+      
+      // Atualiza editor com código ofuscado
+      editor.setValue(obfuscated);
+      
+      // Mostra output
+      document.getElementById('obfuscatedOutput').textContent = obfuscated;
+      document.getElementById('obfuscateStatus').textContent = '✅ Ofuscação concluída!';
+      
+      updateStats();
+      showToast(`🔒 Código ofuscado (${obfuscationLevel})!`, 'success');
+    }
+
+    async function simpleObfuscate(code, config) {
+      // Ofuscação client-side simplificada
+      let result = code;
+      
+      // Remove comentários
+      if (config.compact) {
+        result = result.replace(/\/\*[\s\S]*?\*\//g, '');
+        result = result.replace(/\/\/.*$/gm, '');
+      }
+      
+      // Minifica
+      result = result.replace(/\s+/g, ' ');
+      result = result.replace(/\s*([{};,:])\s*/g, '$1');
+      result = result.trim();
+      
+      // String array encoding
+      if (config.stringArray) {
+        const strings = result.match(/"[^"]*"|'[^']*'/g) || [];
+        const stringMap = {};
+        
+        strings.forEach((str, i) => {
+          if (str.length > 2) {
+            const key = `_0x${i.toString(16)}`;
+            stringMap[key] = str;
+          }
+        });
+        
+        Object.entries(stringMap).forEach(([key, val]) => {
+          if (config.stringArrayEncoding.includes('base64')) {
+            const encoded = btoa(val.slice(1, -1));
+            result = result.split(val).join(`atob("${encoded}")`);
+          }
+        });
+      }
+      
+      // Control flow flattening (simplificado)
+      if (config.controlFlowFlattening) {
+        // Adiciona estrutura de controle embaralhada
+        result = `var _0xproc=function(_0xdata){var _0xstate=0;var _0xres="";while(_0xstate<10){switch(_0xstate++){case 1:_0xres+=_0xdata.charAt(_0xstate);break;default:break;}}return _0xres;};` + result;
+      }
+      
+      // Dead code injection
+      if (config.deadCodeInjection) {
+        const deadCode = `;var _0xdead=Math.random()>0.5?function(){return!1;}:function(){return!0;};`;
+        result = result.replace(/;$/, deadCode);
+      }
+      
+      // Renomeia identificadores
+      if (config.identifierNamesGenerator === 'hexadecimal') {
+        const words = result.match(/[a-zA-Z_$][a-zA-Z0-9_$]*/g) || [];
+        const uniqueWords = [...new Set(words)].filter(w => !['function', 'return', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'true', 'false', 'null', 'undefined'].includes(w));
+        const renameMap = {};
+        
+        uniqueWords.forEach((word, i) => {
+          renameMap[word] = `_0x${i.toString(16)}`;
+        });
+        
+        Object.entries(renameMap).forEach(([original, renamed]) => {
+          const regex = new RegExp(`\\b${original}\\b`, 'g');
+          result = result.replace(regex, renamed);
+        });
+      }
+      
+      // Unicode escape
+      if (config.unicodeEscapeSequence) {
+        result = result.replace(/[a-zA-Z]/g, char => {
+          return '\\u' + char.charCodeAt(0).toString(16).padStart(4, '0');
+        });
+      }
+      
+      // Proteções
+      if (config.disableConsoleOutput) {
+        result = `console.log=console.warn=console.error=function(){};` + result;
+      }
+      
+      if (config.debugProtection) {
+        result = `;((function(){var _0xcheck=setInterval(function(){debugger;},${config.debugProtectionInterval || 2000});})());` + result;
+      }
+      
+      return result;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // BUILD E EXPORTAÇÃO
+    // ═══════════════════════════════════════════════════════
+
+    function buildProject() {
+      buildCount++;
+      document.getElementById('statBuilds').textContent = buildCount;
+      
+      const code = editor.getValue();
+      const html = defaultHTML;
+      const css = defaultCSS;
+      
+      // Cria blob para download
+      const fullCode = `${css}\n\n// ═══════════════════════════════════════════════\n${code}`;
+      
+      // Simula build
+      showToast('📦 Build #'+ buildCount +' gerado!', 'success');
+      
+      // Calcula economia
+      const originalSize = new Blob([defaultCode]).size;
+      const finalSize = new Blob([code]).size;
+      const economy = ((1 - finalSize/originalSize) * 100).toFixed(1);
+      document.getElementById('statCompress').textContent = economy + '%';
+      
+      // Atualiza hash
+      const hash = CryptoJS.SHA256(code + Date.now()).toString().substring(0, 32);
+      document.getElementById('statHash').textContent = hash + '...';
+      
+      return { code, html, css, hash };
+    }
+
+    function saveProject() {
+      const data = {
+        code: editor.getValue(),
+        html: defaultHTML,
+        css: defaultCSS,
+        saved: new Date().toISOString()
+      };
+      
+      localStorage.setItem('cryptostudio_project', JSON.stringify(data));
+      showToast('💾 Projeto salvo!', 'success');
+    }
+
+    function loadProject() {
+      const saved = localStorage.getItem('cryptostudio_project');
+      if (saved) {
+        const data = JSON.parse(saved);
+        editor.setValue(data.code);
+        showToast('📂 Projeto carregado!', 'success');
+      }
+    }
+
+    function exportCode() {
+      document.getElementById('exportModal').classList.add('active');
+      document.getElementById('exportName').value = 'cripto-' + Date.now() + '.js';
+    }
+
+    function closeModal() {
+      document.getElementById('exportModal').classList.remove('active');
+    }
+
+    function downloadCode() {
+      const name = document.getElementById('exportName').value || 'cripto.js';
+      const code = editor.getValue();
+      
+      const blob = new Blob([code], { type: 'application/javascript' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      closeModal();
+      showToast('📤 Código exportado!', 'success');
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.innerHTML = message;
+      toast.className = 'toast ' + type;
+      toast.style.display = 'flex';
+      
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3000);
+    }
+
+    // Carrega projeto salvo ao iniciar
+    loadProject();
+  </script>
+</body>
+</html>

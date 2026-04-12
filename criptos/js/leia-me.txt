@@ -1,0 +1,16 @@
+# instalar as Dependencias
+sudo apt install nodejs
+# Instala o NodeSource (Node 20)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+sudo apt install npm
+npm install -g javascript-obfuscator
+
+# - Ofuscando o arquivo 
+javascript-obfuscator index.js --output index-ofuscado.js 
+
+# Tentativa de desofuscação
+
+npm install -g deobfuscator
+
+synchrony deobfuscate index-ofuscado.js

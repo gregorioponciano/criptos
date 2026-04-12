@@ -1,0 +1,33 @@
+{
+  "name": "criptos-teste",
+  "version": "1.0.0",
+  "description": "Projeto de criptomoedas",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:dev": "NODE_ENV=development vite build",
+    "build:staging": "NODE_ENV=staging vite build",
+    "build:prod": "NODE_ENV=production vite build",
+    "build:obfuscate": "npm run build && npm run obfuscate",
+    "build:all": "npm run build && npm run obfuscate && npm run stats",
+    "preview": "vite preview",
+    "preview:dist": "npx serve dist",
+    "obfuscate": "node scripts/obfuscate.js",
+    "deobfuscate": "node scripts/deobfuscate.js",
+    "clean": "rm -rf dist",
+    "clean:all": "rm -rf dist node_modules/.vite",
+    "stats": "node scripts/stats.js",
+    "version:bump": "node scripts/version.js bump",
+    "version:check": "node scripts/version.js check",
+    "analyze": "npx vite build --mode analyze",
+    "compress": "npm run build && node scripts/compress.js",
+    "zip": "npm run build && node scripts/zip.js"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "javascript-obfuscator": "^4.1.0"
+  }
+}

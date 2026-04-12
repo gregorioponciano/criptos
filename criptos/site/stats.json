@@ -1,0 +1,38 @@
+{
+  "generated": "2026-04-12T01:10:49.213Z",
+  "environment": "development",
+  "files": {
+    "html": [
+      {
+        "name": "index.html",
+        "size": 376,
+        "sizeFormatted": "0.37 KB",
+        "hash": "27467063d126117e",
+        "modified": "2026-04-12T01:07:00.368Z"
+      }
+    ],
+    "css": [
+      {
+        "name": "index-CC3Qfr8B.css",
+        "size": 95,
+        "sizeFormatted": "0.09 KB",
+        "hash": "3722d071d179fb59",
+        "modified": "2026-04-12T01:07:00.368Z"
+      }
+    ],
+    "js": [
+      {
+        "name": "index-C6mq6vaY.js",
+        "size": 38272,
+        "sizeFormatted": "37.38 KB",
+        "hash": "d4506bb3e1127ed7",
+        "modified": "2026-04-12T01:07:05.556Z"
+      }
+    ]
+  },
+  "totals": {
+    "files": 3,
+    "size": 38367,
+    "gzipped": 0
+  }
+}
