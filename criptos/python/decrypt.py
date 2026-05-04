@@ -50,7 +50,7 @@ def decrypt_pegasus_blob(blob: str) -> str:
 # ============================================================
 # COLE SEU BLOB AQUI
 # ============================================================
-BLOB = """COLE_SEU_TEXTO_BASE64_AQUI"""
+BLOB = """C/mAWE2+7Vi0M6CwoXR7k298FIFUJ5WXgRGCVYeU7wARhXZzL0sbF+E35EN1F4Nf+VkBhWfxdvTIAcUV89ALZ8L1WIGRxtU/SnJwNa05NpG9LCCJ9Y/LpzQ8DHVPL7wqvW28YtJhrmagJxcdLC8Sa81HM2llRZhazQ==I"""
 
 if __name__ == "__main__":
     print("=" * 70)
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     print("\n[*] Algoritmo identificado:")
     print("    Base64 → XOR(secret!) → zlib.decompress")
     
-    if BLOB == """COLE_SEU_TEXTO_BASE64_AQUI""":
+    if BLOB == """C/mAWE2+7Vi0M6CwoXR7k298FIFUJ5WXgRGCVYeU7wARhXZzL0sbF+E35EN1F4Nf+VkBhWfxdvTIAcUV89ALZ8L1WIGRxtU/SnJwNa05NpG9LCCJ9Y/LpzQ8DHVPL7wqvW28YtJhrmagJxcdLC8Sa81HM2llRZhazQ==""":
         print("\n[!] Edite o script e cole o BLOB na variável BLOB")
         print("[i] Exemplo de uso:")
         print("    BLOB = 'C/m+Tw4HwkX3vJU...=='\n")
